@@ -17,10 +17,6 @@ julien@julien-desktop:~$ sudo apt update
 julien@julien-desktop:~$ sudo apt install freefem++
 ```
 
-## *Windows* <!-- omit in TOC -->
-
-## *Mac* <!-- omit in TOC -->
-
 # Compilation et exécution
 
 ## Linux
@@ -42,12 +38,6 @@ Sinon, par son chemin absolu
 # Objets
 
 ## Les maillages
-
-- 1.D : `meshL`
-- 2.D : `mesh`
-- 3.D : `mesh3`
-- 3.D (surface) : `meshS`
-- 3.D (ligne)   : `meshL`
 
 ```cpp
 // --------------------------------------------------------- MAILLAGES 2.D
