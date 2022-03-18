@@ -92,6 +92,9 @@ En cas d'oubli du mot de passe administrateur de la machine virtuelle, saisir de
 
 Après m'être inscrit au programme *Windows Insider*, canal *bêta*, lié à mon compte *Windows*, j'ai effectué une série de mise à jour. Après les deux redémarrages, mettre à jour le pilote graphique et enfin mettre à jour le noyau *WSL* avec `wsl --update` dans un invite de commande administrateur. Redémarrer *WSL* avec `wsl --shutdown` et c'est terminé.
 
+Pour afficher l'environnement de bureau *Linux* sur *Windows*, précéder l'application graphique de `wsl.exe` :
+- `wsl.exe xcalc`
+
 ## Désinstaller une distribution
 
 `wsl --unregister disrib`
