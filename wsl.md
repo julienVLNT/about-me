@@ -7,7 +7,6 @@
   - [Paramétrer l'accélération G.P.U de WSL](#paramétrer-laccélération-gpu-de-wsl)
   - [Usage de fenêtres depuis WSL](#usage-de-fenêtres-depuis-wsl)
   - [Désinstaller une distribution](#désinstaller-une-distribution)
-- [Docker](#docker)
 
 Aide-mémoire composé par Julien VALENTIN en mars 2022.
 
@@ -81,6 +80,9 @@ En cas d'oubli du mot de passe administrateur de la machine virtuelle, saisir de
     - `wsl -u user command`
     - `wsl --user user command`
 
+- exécuter une commande *Windows* depuis le *shell*
+    - `wsl.exe command`
+
 - exécuter une distribution spécifique à partir de *Powershell* avec un utilisateur spécifique
     - `wsl --distribution distrib --user user`
 
@@ -88,8 +90,8 @@ En cas d'oubli du mot de passe administrateur de la machine virtuelle, saisir de
 
 ## Usage de fenêtres depuis WSL
 
+Après m'être inscrit au programme *Windows Insider*, canal *bêta*, lié à mon compte *Windows*, j'ai effectué une série de mise à jour. Après les deux redémarrages, mettre à jour le pilote graphique et enfin mettre à jour le noyau *WSL* avec `wsl --update` dans un invite de commande administrateur. Redémarrer *WSL* avec `wsl --shutdown` et c'est terminé.
+
 ## Désinstaller une distribution
 
 `wsl --unregister disrib`
-
-# Docker
