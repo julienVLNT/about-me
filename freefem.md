@@ -29,13 +29,10 @@ Sinon, par son chemin absolu
 
 # Table des matières <!-- omit in TOC -->
 
-- [Scripts](#scripts)
-  - [Les maillages](#les-maillages)
+- [Quelques maillages](#quelques-maillages)
 - [Références](#références)
 
-# Scripts
-
-## Les maillages
+# Quelques maillages 
 
 ```cpp
 // --------------------------------------------------------- MAILLAGES 2.D
