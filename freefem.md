@@ -1,13 +1,5 @@
 Aide-mémoire de Julien VALENTIN, mars 2022.
 
-
-- [Compilation et exécution](#compilation-et-exécution)
-  - [Linux](#linux)
-  - [Windows Subsystem for Linux v.2 avec GUI](#windows-subsystem-for-linux-v2-avec-gui)
-- [Objets](#objets)
-  - [Les maillages](#les-maillages)
-- [Références](#références)
-
 # Installation <!-- omit in TOC -->
 
 ## *Linux* <!-- omit in TOC -->
@@ -17,9 +9,9 @@ julien@julien-desktop:~$ sudo apt update
 julien@julien-desktop:~$ sudo apt install freefem++
 ```
 
-# Compilation et exécution
+# Compilation et exécution <!-- omit in TOC -->
 
-## Linux
+## Linux <!-- omit in TOC -->
 
 Dans le répertoire où se trouve le script :
 
@@ -29,13 +21,19 @@ Sinon, par son chemin absolu
 
 - `FreeFem++ /chemin/vers/le/script.edp`
 
-## Windows Subsystem for Linux v.2 avec GUI
+## Windows Subsystem for Linux v.2 avec GUI <!-- omit in TOC -->
 
 (c.f [wsl.md](wsl.md))
 
 - `wsl.exe FreeFem++ script.edp`
 
-# Objets
+# Table des matières <!-- omit in TOC -->
+
+- [Scripts](#scripts)
+  - [Les maillages](#les-maillages)
+- [Références](#références)
+
+# Scripts
 
 ## Les maillages
 
