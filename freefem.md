@@ -31,7 +31,13 @@ Sinon, par son chemin absolu
 
 - [Les types](#les-types)
   - [Types de nombres](#types-de-nombres)
-- [Quelques maillages](#quelques-maillages)
+  - [Le type `border`](#le-type-border)
+  - [Les types de maillages pour les éléments finis](#les-types-de-maillages-pour-les-éléments-finis)
+  - [Les chaînes de caractères](#les-chaînes-de-caractères)
+- [Structure de contrôle `if ... else`](#structure-de-contrôle-if--else)
+- [Itérer avec `for`](#itérer-avec-for)
+- [Itérer avec `while`](#itérer-avec-while)
+- [Quelques maillages classiques](#quelques-maillages-classiques)
 - [Références](#références)
 
 # Les types
@@ -122,7 +128,58 @@ z ^ w            // exponentiation
 z == w           // test d'égalité
 ```
 
-# Quelques maillages 
+## Le type `border`
+
+## Les types de maillages pour les éléments finis
+
+- `mesh`
+- `mesh3`
+- `meshL`
+- `meshS`
+
+## Les chaînes de caractères
+
+Le type permettant de représenter les chaînes de caractères est le type `string`.
+
+```cpp
+string c           // déclaration
+string c = "Hello" // déclaration et affectation
+```
+
+# Structure de contrôle `if ... else`
+
+```cpp
+if( booleen ) {
+    instruction1;
+    instruction2;
+    instruction3;
+}
+else {
+    instruction4;
+    instruction5;
+    instruction6;
+}
+```
+
+# Itérer avec `for`
+
+```cpp
+for( initialisation; condition; incrément ) {
+    instruction1;
+    instruction2;
+}
+```
+
+# Itérer avec `while`
+
+```cpp
+while( booleen ) {
+    instruction1;
+    instruction2;
+}
+```
+
+# Quelques maillages classiques
 
 ```cpp
 // --------------------------------------------------------- MAILLAGES 2.D
