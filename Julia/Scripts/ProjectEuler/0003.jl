@@ -27,9 +27,7 @@ end
 @assert( isPrime(1)  == false, "isPrime(1) test failed !")
 @assert( isPrime(2)  == true,  "isPrime(2) test failed !")
 @assert( isPrime(3)  == true,  "isPrime(3) test failed !")
-@assert( isPrime(6)  == false, "isPrime(6) test failed !")
-@assert( isPrime(8)  == false, "isPrime(8) test failed !")
-@assert( isPrime(10) == false, "isPrime(10) test failed !")
+@assert( isPrime(6)  == false, "isPrime(4) test failed !")
 
 # Now, let factorize an integer in prime factors
 function primeFactorization(m)
