@@ -1,0 +1,47 @@
+/*
+    Resolution d'un probleme de Poisson pour mesurer la stabilite des elements
+    finis P1.
+*/
+// Base d'interpolation d'ordre eleve
+load "Element_P3"
+load "Element_P4"
+
+// Parametrage de l'export
+ofstream fichier("erreur.dat");
+fichier << "nbelement,erreurL2" << endl;
+real err;
+
+// Bord du domaine
+border C(t=0, 1){
+	x = cos(2*pi*t);
+	y = sin(2*pi*t);
+	label=1;
+}
+
+// Setup du probleme
+macro grad(u) [dx(u), dy(u)] //EOM
+
+func fa = (1-x^2-y^2);
+func ff = 4;
+
+// Iteration sur le nombre d'elements
+int[int] vnel = [8, 16, 32, 64, 128, 256, 512, 1024, 2048];
+
+for [i, nel : vnel]{
+	// Construction du maillage
+	mesh th = buildmesh(C(nel));
+	// Construction de l'espace d'interpolation
+	fespace V(th, P1);
+	// Construction des deux membres de l'equation variationnelle
+	varf F(u,v) = int2d(th)( grad(u)'*grad(v) ) + on(1, u = 1);
+	varf L(u,v) = int2d(th)( ff*v );
+	// Construction du systeme lineaire
+	matrix    A = F(V,V);
+	real[int] B = L(0,V);
+	// Resolution
+	V u;
+	u[] = A^(-1)*B;
+	// Calcul et export de l'erreur
+	err = sqrt( int2d(th)( (u-fa)^2 ) / th.area );
+	fichier << nel << ", " << err << endl;
+}

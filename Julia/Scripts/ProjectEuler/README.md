@@ -1,0 +1,1 @@
+This folder contains the scripts used to solve [ProjectEuler.net](https://projecteuler.net/archives) problems.

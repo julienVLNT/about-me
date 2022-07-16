@@ -1,0 +1,5 @@
+//  First program in FreeFEM++.
+//  Julien VALENTIN (2022)  julien.vlnt@gmail.com
+//  "Hello, World !" program.
+//  Execute in a terminal : `FreeFem++ helloFreeFem++.edp`
+cout << "Hello, World !" << endl;

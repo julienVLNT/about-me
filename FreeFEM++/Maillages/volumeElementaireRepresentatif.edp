@@ -1,0 +1,52 @@
+// Maillage d'un volume elementaire representatif
+real dh = 1;
+real dl = 1;
+real r  = 1;
+
+border b1(t=0, 1){
+    x = t*dl;
+    y = 0.0;
+}
+border b2(t=0, 1){
+    x = dl + r*cos(pi*(1-t));
+    y = r*sin(pi*(1-t));
+}
+border b3(t=0, 1){
+    x = dl + 2*r + dl*t;
+    y = 0;
+}
+border b4(t=0, 1){
+    x = 2*dl + 2*r;
+    y = t*dh;
+}
+border b5(t=0, 1){
+    x = ;
+    y = ;
+}
+border b6(t=0, 1){
+    x = ;
+    y = ;
+}
+border b7(t=0, 1){
+    x = ;
+    y = ;
+}
+border b8(t=0, 1){
+    x = ;
+    y = ;
+}
+
+mesh th = buildmesh(
+                b1()
+            +   b2()
+            +   b3()
+            +   b4()
+            +   b5()
+            +   b6()
+            +   b7()
+            +   b8()
+        );
+
+// Visualisation
+load "medit"
+medit("V.E.R", th);
