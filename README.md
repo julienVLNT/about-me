@@ -40,17 +40,13 @@ This repo means to introduce what I know about computer science and its applicat
   - [Intel OneAPI Toolkits for *Fortran90*](#intel-oneapi-toolkits-for-fortran90)
   - [Julia](#julia)
   - [Open MPI](#open-mpi)
+  - [Paraview](#paraview)
   - [PETSc](#petsc)
   - [Python](#python)
   - [Rheolef](#rheolef)
   - [SageMath for *Windows*](#sagemath-for-windows)
   - [Scilab](#scilab)
   - [SLEPc](#slepc)
-- [Setup the environment](#setup-the-environment)
-  - [Set *W.S.L v.2* up](#set-wsl-v2-up)
-  - [Set *Conda* up in a Debian-based distribution](#set-conda-up-in-a-debian-based-distribution)
-    - [Conda cheatsheet](#conda-cheatsheet)
-  - [Set *PETSc* up in a *Linux* distribution](#set-petsc-up-in-a-linux-distribution)
 - [What's next ?](#whats-next-)
 
 # The environment
@@ -102,6 +98,7 @@ All of the following are freely available programming languages that suit for en
 - [CUDA](https://developer.nvidia.com/cuda-toolkit)
 - [FEniCs](https://fenicsproject.org/)
 - [MPI](https://www.open-mpi.org/)
+- [Paraview](https://www.paraview.org/)
 - [PyTorch](https://pytorch.org/)
 - [Tensorflow](https://www.tensorflow.org/)
 
@@ -129,6 +126,8 @@ Click on the titles, they are linked to download pages.
 
 ## [Open MPI](https://www.open-mpi.org/software/ompi/v4.1/)
 
+## [Paraview](https://www.paraview.org/download/)
+
 ## [PETSc](https://petsc.org/release/install/)
 
 ## [Python](https://www.python.org/downloads/)
@@ -142,5 +141,3 @@ Click on the titles, they are linked to download pages.
 ## [SLEPc](https://slepc.upv.es/documentation/instal.htm)
 
 # What's next ?
-
-One can easily explore this repo using the [index](index.md).

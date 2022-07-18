@@ -1,0 +1,49 @@
+/* ----------------------------------------------------------------------------
+            CONSTRUCTION DU MAILLAGE D'UN EMPILEMENT DE N RECTANGLES
+----------------------------------------------------------------------------- */
+bool debug;
+
+// Grandeurs physiques et technologiques
+real hauteur  = 1;                               // [m] hauteur totale de la tape
+real longueur = 1;                               // [m] longueur totale de la tape
+int[int] regions  = [0, 0, 0, 0, 0, 0, 0, 0];    // orientation par couche
+
+// Grandeurs numeriques
+real h = hauteur/regions.n;                        // [m] hauteur d'une sous-couche
+int nely = 5;                                      // nombre d'elements verticaux
+int nelx = regions.n * longueur/hauteur * nely;    // nombre d'elements horizontaux (grille carree)
+
+int[int] lab(4);
+
+// -------------------
+// Maillage du domaine
+// -------------------
+
+// initialisation avec la couche 0.
+lab = [1, 2, 5, 4];
+mesh Th = square(nelx, nely, [longueur*x, h*y], label=lab, region=regions[0]);
+
+// iteration sur les prochaines couches
+for(int i=1; i < regions.n; i++)
+{
+    if(i == regions.n-1)
+    {
+        lab = [5, 2, 3, 4];
+        Th = Th + square(nelx, nely, [longueur*x, h*(i+y)], label=lab, region=regions[i]);
+    }
+    else
+    {
+        lab = [5, 2, 5, 4];
+        Th = Th + square(nelx, nely, [longueur*x, h*(i+y)], label=lab, region=regions[i]);
+    }
+}
+
+// controle
+debug = true;
+if(debug)
+{
+    load "medit"
+    medit("Thref", Th);
+}
+
+// VALIDE LE 18/07/2022
