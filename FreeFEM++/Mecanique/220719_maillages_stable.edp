@@ -1,0 +1,75 @@
+/* ----------------------------------------------------------------------------
+    CREATION D'UN MAILLAGE CONSTITUE D'UN EMPILEMENT DE RECTANGLE.
+
+    La seule donnee est le vecteur des regions, dont les valeurs sont les 
+    angles en degrés de la region en question.
+---------------------------------------------------------------------------- */
+bool debug;
+verbosity = 0;
+
+// A MODIFIER PAR L'UTILISATEUR : valeurs en degrés
+int[int] regions = [0, 45, 45, 90];
+
+// Longueur de la tape
+real long = 50;
+
+// Hauteur de la tape
+real masseSurfacique  = 194;       // [g/m^2]  densité surfacique de fibre
+real masseVolumique   = 1800;      // [kg/m^3] densité volumique de fibre
+real tauxDeFibresInit = 0.5091;    // [ ]      taux de fibres initial
+
+real haut = regions.n * ( masseSurfacique/masseVolumique )/( tauxDeFibresInit );    // [mm] hauteur totale de la tape
+real h    = haut / regions.n;                                                       // [mm] hauteur d'une couche de la tape
+
+// Nombre d'elements verticaux par couche
+int nely = 5;
+
+// Nombre d'elements horizontaux par couche (grille carree)
+int nelx = regions.n * long/haut * nely;
+
+// Liste des labels
+int[int] lab(4);
+
+// Initialisation du maillage
+mesh Th;
+
+if(regions.n == 1)
+{
+    lab = [1, 2, 3, 4];
+    Th  = square(nelx, nely, [long*x, haut*y], label=lab, region=regions[0]);
+}
+
+else
+{
+    // Initialisation
+    lab = [1, 2, 5, 4];
+    Th = square(nelx, nely, [long*x, h*y], label=lab, region=regions[0]);
+
+    // Iteration sur les couches intermediaires
+    lab = [5, 2, 5, 4];
+    for(int i=1; i < regions.n-1; i++)
+    {
+        Th = Th + square(nelx, nely, [long*x, h*(i+y)], label=lab, region=regions[i]);
+    }
+
+    // Derniere couche
+    lab = [5, 2, 3, 4];
+    Th = Th + square(nelx, nely, [long*x, h*(regions.n - 1 + y)], label=lab, region=regions[regions.n-1]);
+}
+
+// Controle
+debug = true;
+if(debug)
+{
+    load "medit"
+    medit("Maillage", Th);
+
+    load "iovtk"
+    int[int] ordre = [1];
+    savevtk("Th.vtu", Th, [0.0, 0.0, 0.0], dataname="NULL", order=ordre);
+}
+
+else
+{
+    plot(Th);
+}

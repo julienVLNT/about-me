@@ -1,0 +1,248 @@
+verbosity = 0;
+bool debug;
+
+// EXPORT
+load "iovtk"
+int[int] ordre = [1];
+
+// PARAMETRES UTILISATEUR
+int      nincr = 25;
+int[int] reg   = [0, 45, 45, 90, 90, 45, 45, 0];
+
+// MAILLAGE (c.f 220719_maillages_stable.edp)
+real long = 2;
+
+real masseSurfacique  = 194;
+real massewolumique   = 1800;
+real tauxDeFibresInit = 0.5091;
+
+real haut = reg.n * ( masseSurfacique/massewolumique )/( tauxDeFibresInit );
+real h    = haut / reg.n;
+
+int nely = 5;
+
+int nelx = reg.n * long/haut * nely;
+
+int[int] lab(4);
+
+mesh Th;
+
+if(reg.n == 1)
+{
+    lab = [1, 2, 3, 4];
+    Th  = square(nelx, nely, [long*x, haut*y], label=lab, region=reg[0]);
+}
+
+else
+{
+    lab = [1, 2, 5, 4];
+    Th = square(nelx, nely, [long*x, h*y], label=lab, region=reg[0]);
+
+    lab = [5, 2, 5, 4];
+    for(int i=1; i < reg.n-1; i++)
+    {
+        Th = Th + square(nelx, nely, [long*x, h*(i+y)], label=lab, region=reg[i]);
+    }
+
+    lab = [5, 2, 3, 4];
+    Th = Th + square(nelx, nely, [long*x, h*(reg.n - 1 + y)], label=lab, region=reg[reg.n-1]);
+}
+
+debug = false;
+if(debug)
+{
+    plot(Th);
+}
+
+// ESPACES D'INTERPOLATION
+fespace wh(Th, [P2, P2]);
+fespace Wh(Th, [P1,P1,P1]);
+
+// INITIALISATION DES CHAMPS
+wh [ux,uy], [upx,upy], [virtx,virty];    // deplacements et deplacements wirtuels
+Wh [Ex,Ey,Ez], [Sx,Sy,Sz];               // efforts et contraintes     
+
+savevtk("out/dep."+0+".vtu", Th, [ux, uy, 0.0], dataname="Deplacements", order=ordre);
+savevtk("out/eps."+0+".vtu", Th, [Ex, Ey, Ez], dataname="Deformations", order=ordre);
+savevtk("out/sig."+0+".vtu", Th, [Sx, Sy, Sz], dataname="Contraintes", order=ordre);
+
+// MACROS DE CALCUL MECANIQUE
+macro Eps(w) [dx(w#x), dy(w#y), 0.5*(dx(w#y)+dy(w#x))] //EOM
+macro Sig(w) Q(w) * Eps(w)                                //EOM
+macro vf(w)  tauxDeFibresInit*(1-dx(w#x))*(1-dy(w#y))  //EOM
+
+/* ----------------------------------------------------------------------------
+                    Implementation du comportement de la tape.
+                    On utilise le prefixe 'm' pour les macros
+---------------------------------------------------------------------------- */
+// Module d'Young dans le sens longitudinal du materiau
+real E = 230000;
+// Coefficient Q33 pour la region a 0°
+real K = 1e-3;
+// Absisses de transition du modele de comportement
+real xa = -0.23010762367693652;
+real xb = -0.2002042550508584;
+real xc = -0.06021099690861632;
+
+// Coefficients pour la fonction f
+real [int] CoeffonctionF = 
+[
+    -0.42951497085299856,
+     1e-32,
+     0.007384548041775037,
+    -20.816240829161316,
+     2404.3423021456574,
+     1632.5074365366193,
+     354.6360491076587,
+     25.336332926295874,
+    -14.7424631674602,
+    -2.514713981592056
+];
+real lf = CoeffonctionF[0];
+real nf = CoeffonctionF[1];
+real hf = CoeffonctionF[2];
+real kf = CoeffonctionF[3];
+real cf = CoeffonctionF[4];
+real df = CoeffonctionF[5];
+real ef = CoeffonctionF[6];
+real gf = CoeffonctionF[7];
+real af = CoeffonctionF[8];
+real bf = CoeffonctionF[9];
+
+// Coefficients pour la fonction g
+real [int] CoeffonctionG = 
+[
+    -0.4064243770219842,
+     1e-32,
+     0.007196432628801541,
+    -20.32296653042336,
+    -2521.124121630783,
+    -1534.194116174784,
+    -319.80154641193377,
+    -22.342455052100895,
+    -14.217107145568184,
+    -2.5423877699339337
+];
+real lg=CoeffonctionG[0];
+real ng=CoeffonctionG[1];
+real hg=CoeffonctionG[2];
+real kg=CoeffonctionG[3];
+real cg=CoeffonctionG[4];
+real dg=CoeffonctionG[5];
+real eg=CoeffonctionG[6];
+real gg=CoeffonctionG[7];
+real ag=CoeffonctionG[8];
+real bg=CoeffonctionG[9];
+
+// Implementation de la fonction f par zone de fonctionnement
+macro mfa(w) ( lf*(dy(w#y)+dx(w#x)) + nf )                                                   //EOM
+macro mfb(w) ( hf*exp(kf*(dy(w#y)+dx(w#x))) )                                                //EOM
+macro mfc(w) ( cf*(dy(w#y)+dx(w#x))^3 + df*(dy(w#y)+dx(w#x))^2 + ef*(dy(w#y)+dx(w#x)) + gf ) //EOM
+macro mfd(w) ( af*(dy(w#y)+dx(w#x))+bf )                                                     //EOM
+//
+// Expression de f en fonction du deplacement
+macro mf(w) 
+(
+     ((dy(w#y)+dx(w#x))>=xc)                         * mfa(w)*(-1)
+    +((dy(w#y)+dx(w#x))<xc && (dy(w#y)+dx(w#x))>=xb) * mfb(w)*(-1)
+    +((dy(w#y)+dx(w#x))<xb && (dy(w#y)+dx(w#x))>=xa) * mfc(w)*(-1)
+    +((dy(w#y)+dx(w#x))<xa)                          * mfd(w)*(-1)
+)
+//EOM
+
+// Implementation de la fonction f par zone de fonctionnement
+macro mga(w) ( lg*(dy(w#y)-dx(w#x)) + ng )                                                   //EOM
+macro mgb(w) ( hg*exp(kg*(dy(w#y)-dx(w#x))) )                                                //EOM
+macro mgc(w) ( cg*(dy(w#y)-dx(w#x))^3 + dg*(dy(w#y)-dx(w#x))^2 + eg*(dy(w#y)-dx(w#x)) + gg ) //EOM
+macro mgd(w) ( ag*(dy(w#y)-dx(w#x))+bg )                                                     //EOM
+//
+// Expression de g 
+macro mg(w)
+(
+      ((dy(w#y)-dx(w#x))>=xc)                         * mga(w)*(-1)
+    + ((dy(w#y)-dx(w#x))<xc && (dy(w#y)-dx(w#x))>=xb) * mgb(w)*(-1)
+    + ((dy(w#y)-dx(w#x))<xb && (dy(w#y)-dx(w#x))>=xa) * mgc(w)*(-1)
+    + ((dy(w#y)-dx(w#x))<xa)                          * mgd(w)*(-1)
+)
+//EOM
+
+// Implementation des coefficients du comportement
+macro mC11(w) ( E*vf(w) ) //EOM
+macro mC22(w) ( mf(w) / (2 * (dx(w#x)+dy(w#y)) + 1e-32) ) //EOM
+macro mC(w) ( mg(w) / (dy(w#y)-dx(w#x) + 1e-32) ) //EOM
+
+// Matrice de comportement pour une zone a 0°
+macro Q0(w)
+[
+    [mC11(w), 0.0, 0.0],
+
+    [0.0, mC22(w)+mC(w)/2, 0.0],
+
+    [ 0.0, 0.0, K]
+]
+//EOM
+
+// Matrice de comportement pour une zone a 90°
+macro Q90(w)
+[
+    [mC22(w)+mC(w)/2, mC22(w)-mC(w)/2, 0.0],
+
+    [mC22(w)-mC(w)/2, mC22(w)+mC(w)/2, 0.0],
+
+    [ 0.0, 0.0, mC(w)]
+]
+//EOM
+
+// Matrice de comportement homogeneisee pour une zone a +/-45°
+real c = sqrt(2.0)/2.0;
+real s = sqrt(2.0)/2.0;
+macro Q45(w)
+[
+    [s^4*mC11(w) + c^4*(mC22(w) + 0.5*mC(w)) + c^2*s^2*K, s^2*(mC22(w) - 0.5*mC(w)), 0.0],
+
+    [c^2*(mC22(w) - 0.5*mC(w)), mC22(w) + 0.5*mC(w), 0.0],
+
+    [ 0.0, 0.0, c^2*mC(w)+s^2*K]
+]
+//EOM
+
+// Distribution du comportement
+macro Q(w) ( Q0(w)*(region==0) + Q90(w)*(region==90) + Q45(w)*(region==45) ) //EOM
+
+// PROBLEME MECANIQUE STATIQUE
+problem mecanique([ux, uy], [virtx, virty])
+    = int2d(Th)( Eps(virt)' * Q(up) * Eps(u) )
+    + on(1, ux=0, uy=0)
+    + on(2, ux=0)
+    + on(3, ux=0, uy=-haut/(2*nincr))
+    + on(4, ux=0)
+    ;
+
+// ITERATION INCREMENTALE
+debug = false;
+for(int i=1; i < nincr+1; i++)
+{
+    cout << "Increment i = " << i << endl;
+    mecanique;
+
+    real aireMin = checkmovemesh(Th, [x+ux, y+uy]);
+    if(aireMin > 0)
+    {
+        Th = movemesh(Th, [x+ux, y+uy]);
+        [ux, uy] = [ux, uy];
+    }
+    else
+    {
+        cout << "    Erreur ! Aire minimale < 0 !" << endl;
+        break;
+    }
+    
+    [Ex, Ey, Ez] = Eps(u);
+    [Sx, Sy, Sz] = Sig(u);
+
+    savevtk("out/dep."+i+".vtu", Th, [ux,uy,0.0], dataname="Deplacement", order=ordre);
+    savevtk("out/eps."+i+".vtu", Th, [Ex,Ey,Ez], dataname="Deformations", order=ordre);
+    savevtk("out/sig."+i+".vtu", Th, [Sx,Sy,Sz], dataname="Contraintes", order=ordre);
+
+    [upx, upy] = [ux, uy];
+}

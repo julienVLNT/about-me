@@ -1,0 +1,122 @@
+/* ----------------------------------------------------------------------------
+    ON TRAITE UN PROBLEME D'ELASTICITE NON-LINEAIRE. ON TRAITE LE CAS DE 
+    COMPRESSION VERTICALE AVEC BORDS BLOQUES.
+---------------------------------------------------------------------------- */
+verbosity = 0;
+bool debug;
+
+// EXPORT
+load "iovtk"
+int[int] ordre = [1];
+
+// PARAMETRES UTILISATEUR
+int      nincr = 10;
+int[int] reg   = [0];
+
+// MAILLAGE (c.f 220719_maillages_stable.edp)
+real long = 50;
+
+real masseSurfacique  = 194;
+real masseVolumique   = 1800;
+real tauxDeFibresInit = 0.5091;
+
+real haut = reg.n * ( masseSurfacique/masseVolumique )/( tauxDeFibresInit );
+real h    = haut / reg.n;
+
+int nely = 5;
+
+int nelx = reg.n * long/haut * nely;
+
+int[int] lab(4);
+
+mesh Th;
+
+if(reg.n == 1)
+{
+    lab = [1, 2, 3, 4];
+    Th  = square(nelx, nely, [long*x, haut*y], label=lab, region=reg[0]);
+}
+
+else
+{
+    lab = [1, 2, 5, 4];
+    Th = square(nelx, nely, [long*x, h*y], label=lab, region=reg[0]);
+
+    lab = [5, 2, 5, 4];
+    for(int i=1; i < reg.n-1; i++)
+    {
+        Th = Th + square(nelx, nely, [long*x, h*(i+y)], label=lab, region=reg[i]);
+    }
+
+    lab = [5, 2, 3, 4];
+    Th = Th + square(nelx, nely, [long*x, h*(reg.n - 1 + y)], label=lab, region=reg[reg.n-1]);
+}
+
+debug = false;
+if(debug)
+{
+    plot(Th);
+}
+
+// ESPACES D'INTERPOLATION
+fespace Vh(Th, [P2,P2]);
+fespace Wh(Th, [P1,P1,P1]);
+
+// INITIALISATION DES CHAMPS
+Vh [ux, uy], [upx, upy], [virtx, virty];    // deplacements et deplacements virtuels
+Wh [Ex, Ey, Ez], [Sx, Sy, Sz];
+
+savevtk("out/dep."+0+".vtu", Th, [ux, uy, 0.0], dataname="Deplacements", order=ordre);
+savevtk("out/eps."+0+".vtu", Th, [Ex, Ey, Ez], dataname="Deformations", order=ordre);
+savevtk("out/sig."+0+".vtu", Th, [Sx, Sy, Sz], dataname="Contraintes", order=ordre);
+
+// PROBLEME MECANIQUE STATIQUE EN DEPLACEMENT
+macro Eps(v) [dx(v#x), dy(v#y), 0.5*(dx(v#y)+dy(v#x))] //EOM
+macro Sig(v) Q(v) * Eps(v)                             //EOM
+
+macro Q(v)
+[
+    [1.0, 0.0, 0.0],
+    [0.0, 1e4*exp(v#x^2 + v#y^2), 0.0],
+    [0.0, 0.0, 1.0]
+
+]
+//EOM
+
+problem mecanique([ux, uy], [virtx, virty])
+    = int2d(Th)( Eps(virt)' * Q(up) * Eps(u) )
+    + on(1, ux=0, uy=0)
+    + on(2, ux=0)
+    + on(3, ux=0, uy=-haut/(2*nincr))
+    + on(4, ux=0)
+    ;
+
+// ITERATION INCREMENTALE
+debug = false;
+for(int i=1; i < nincr+1; i++)
+{
+    cout << "Increment i = " << i << endl;
+
+    mecanique;
+
+    real aireMin = checkmovemesh(Th, [x+ux, y+uy]);
+    if(aireMin > 0)
+    {
+        Th = movemesh(Th, [x+ux, y+uy]);
+        [ux, uy] = [ux, uy];
+    }
+    else
+    {
+        cout << "    Erreur ! Aire minimale < 0 !" << endl;
+        break;
+    }
+
+    [Ex, Ey, Ez] = Eps(u);
+    [Sx, Sy, Sz] = Sig(u);
+
+    [upx, upy] = [ux, uy];
+
+    savevtk("out/dep."+i+".vtu", Th, [ux, uy, 0.0], dataname="Deplacements", order=ordre);
+    savevtk("out/eps."+i+".vtu", Th, [Ex, Ey, Ez], dataname="Deformations", order=ordre);
+    savevtk("out/sig."+i+".vtu", Th, [Sx, Sy, Sz], dataname="Contraintes", order=ordre);
+}
